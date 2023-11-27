@@ -1,138 +1,146 @@
-(function($){
-  // Search
-  var $searchWrap = $('#search-form-wrap'),
-    isSearchAnim = false,
-    searchAnimDuration = 200;
+$(function(){
+    var activeItem = null;
+    var toTop = document.getElementById("to-top");
+    var scrollDistance = {y: 'undefined'}, scrollDirection;
 
-  var startSearchAnim = function(){
-    isSearchAnim = true;
-  };
+    $("#to-top").hide();
+    $(".catalog-dropdown").hide();
+    $("a").focus(function(){this.blur()});
 
-  var stopSearchAnim = function(callback){
-    setTimeout(function(){
-      isSearchAnim = false;
-      callback && callback();
-    }, searchAnimDuration);
-  };
+    $('pre').addClass('linenums');
+    $('pre').addClass('prettyprint');
+    prettyPrint();
 
-  $('.nav-search-btn').on('click', function(){
-    if (isSearchAnim) return;
+    $('.archive-wrapper').find('a').addClass('activeColor');
+    $('.pagination-btn').find('a').addClass('deactiveColor');
+    $('.footer-banner').find('a').addClass('activeColor');
+    $('.post-wrapper').find('a').addClass('activeColor');
+    $('.index-post-title').addClass('deactiveColor');
+    $('.header-title').addClass('deactiveColor');
+    $('.post-date').addClass('deactiveColor');
+    $('.author-name').addClass('deactiveColor');
+    $('.toTop').addClass('deactiveColor');
 
-    startSearchAnim();
-    $searchWrap.addClass('on');
-    stopSearchAnim(function(){
-      $('.search-form-input').focus();
+    
+    //Show More Info in Index
+    $(".index-post-wrapper").on("touchstart", postDetail);
+    $(".index-post-wrapper").on("mouseenter", postDetail);
+    $(".index-post-wrapper").on("mouseleave", postTitle);
+    
+    //Show Catalog
+    $(".catalog-btn").on("click", toggleCatalog);
+    $(".catalog-dropdown").on("click", function(e){
+        e.stopPropagation();
     });
-  });
 
-  $('.search-form-input').on('blur', function(){
-    startSearchAnim();
-    $searchWrap.removeClass('on');
-    stopSearchAnim();
-  });
+    //Back To Top
+    $("a.toTop").click(function() {
+        $("html, body").animate({
+            scrollTop: $($(this).attr("href")).offset().top + "px"
+        }, {
+            duration: 500,
+            easing: "swing"
+        });
+        return false;
+    });
 
-  // Share
-  $('body').on('click', function(){
-    $('.article-share-box.on').removeClass('on');
-  }).on('click', '.article-share-link', function(e){
-    e.stopPropagation();
+    //Show or Hide Gallery Photo
+    $(".gallery-thumbnail").on("click",showGalleryPhoto);
 
-    var $this = $(this),
-      url = $this.attr('data-url'),
-      encodedUrl = encodeURIComponent(url),
-      id = 'article-share-box-' + $this.attr('data-id'),
-      title = $this.attr('data-title'),
-      offset = $this.offset();
-
-    if ($('#' + id).length){
-      var box = $('#' + id);
-
-      if (box.hasClass('on')){
-        box.removeClass('on');
-        return;
-      }
-    } else {
-      var html = [
-        '<div id="' + id + '" class="article-share-box">',
-          '<input class="article-share-input" value="' + url + '">',
-          '<div class="article-share-links">',
-            '<a href="https://twitter.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"><span class="fa fa-twitter"></span></a>',
-            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"><span class="fa fa-facebook"></span></a>',
-            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="article-share-pinterest" target="_blank" title="Pinterest"><span class="fa fa-pinterest"></span></a>',
-            '<a href="https://www.linkedin.com/shareArticle?mini=true&url=' + encodedUrl + '" class="article-share-linkedin" target="_blank" title="LinkedIn"><span class="fa fa-linkedin"></span></a>',
-          '</div>',
-        '</div>'
-      ].join('');
-
-      var box = $(html);
-
-      $('body').append(box);
+    //Show or Hide Article Lightbox
+    $(".post-content img").on("click",showGalleryPhoto);
+    $(".gallery-photo").on("click",function(e){
+        e.stopPropagation();
+    });
+    $(".close-gallery").on("click",closeGallery);
+    $(".lightbox").on("click",closeGallery);
+    
+    function postDetail(){
+        if (activeItem != $(this)){
+            postTitle.call(activeItem);
+            activeItem = $(this);
+        }
+        $(this).children(".index-post-info").fadeTo(500,1);
+        $(this).find(".index-post-title").removeClass('deactiveColor');
+        $(this).find(".index-post-title").addClass('activeColor');
+        $(this).find(".index-post-categories").children("a").removeClass('deactiveColor');
+        $(this).find(".index-post-categories").children("a").addClass('activeColor');
     }
 
-    $('.article-share-box.on').hide();
+    function postTitle(){
+        $(this).children(".index-post-info").fadeTo(500,0);
+        $(this).children(".index-post-info").fadeTo(500,0);
+        $(this).find(".index-post-title").addClass('deactiveColor');
+        $(this).find(".index-post-title").removeClass('activeColor');
+        $(this).find(".index-post-categories").children("a").addClass('deactiveColor');
+        $(this).find(".index-post-categories").children("a").removeClass('activeColor');
+    }
 
-    box.css({
-      top: offset.top + 25,
-      left: offset.left
-    }).addClass('on');
-  }).on('click', '.article-share-box', function(e){
-    e.stopPropagation();
-  }).on('click', '.article-share-box-input', function(){
-    $(this).select();
-  }).on('click', '.article-share-box-link', function(e){
-    e.preventDefault();
-    e.stopPropagation();
 
-    window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-  });
+    function toggleCatalog(e){
+        if($(".catalog-dropdown").is(":hidden")){
+            $(".catalog-dropdown").fadeIn();
+        }else{
+            $(".catalog-dropdown").fadeOut();
+        }
 
-  // Caption
-  $('.article-entry').each(function(i){
-    $(this).find('img').each(function(){
-      if ($(this).parent().hasClass('fancybox') || $(this).parent().is('a')) return;
+        $(document).one("click", function(){
+            $(".catalog-dropdown").fadeOut();
+        });
+        e.stopPropagation();
+    }
 
-      var alt = this.alt;
+    //Toggle 'To Top' Button State
+    window.onscroll = function(e){
+        checkScrollDirec();
 
-      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+        if(scrollDirection == 'down'){
+            $("#to-top").animate({
+                opacity: 'hide'
+            }, {
+                duration: 500,
+                easing: "swing"
+            });
+        }
+        else if(scrollDirection == 'up'){
+            $("#to-top").animate({
+                opacity: 'show'
+            }, {
+                duration: 500,
+                easing: "swing"
+            });
+        }
+    }
+    
+    function checkScrollDirec() {
+        if (typeof scrollDistance.y == 'undefined') {
+          scrollDistance.y = window.pageYOffset;
+        }
+        var diffY = scrollDistance.y - window.pageYOffset;
+        if (diffY < 0) {
+          scrollDirection = 'down';
+        } else if (diffY > 0) {
+          scrollDirection = 'up';
+        } else {
+        }
+        scrollDistance.y = window.pageYOffset;
+      }
 
-      $(this).wrap('<a href="' + this.src + '" data-fancybox=\"gallery\" data-caption="' + alt + '"></a>')
-    });
+    function showGalleryPhoto(){
+        $(".lightbox").fadeIn(500);
+        $(".lightbox").attr("style","display: flex");
+        if($(this).attr("value"))
+            //Gallery Photo
+            $(".gallery-photo").attr("src",$(this).attr("value"));
+        else
+            //Article Photo
+            $(".gallery-photo").attr("src",$(this).attr("src"));
 
-    $(this).find('.fancybox').each(function(){
-      $(this).attr('rel', 'article' + i);
-    });
-  });
+        $('body').addClass("hideoverflow");
+    }
 
-  if ($.fancybox){
-    $('.fancybox').fancybox();
-  }
-
-  // Mobile nav
-  var $container = $('#container'),
-    isMobileNavAnim = false,
-    mobileNavAnimDuration = 200;
-
-  var startMobileNavAnim = function(){
-    isMobileNavAnim = true;
-  };
-
-  var stopMobileNavAnim = function(){
-    setTimeout(function(){
-      isMobileNavAnim = false;
-    }, mobileNavAnimDuration);
-  }
-
-  $('#main-nav-toggle').on('click', function(){
-    if (isMobileNavAnim) return;
-
-    startMobileNavAnim();
-    $container.toggleClass('mobile-nav-on');
-    stopMobileNavAnim();
-  });
-
-  $('#wrap').on('click', function(){
-    if (isMobileNavAnim || !$container.hasClass('mobile-nav-on')) return;
-
-    $container.removeClass('mobile-nav-on');
-  });
-})(jQuery);
+    function closeGallery(){
+        $(".lightbox").fadeOut(500);
+        $('body').removeClass("hideoverflow");
+    }
+});
