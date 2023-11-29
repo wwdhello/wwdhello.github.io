@@ -2,12 +2,19 @@
 <search>
   <entry>
     <title>photos</title>
-    <url>/2023/11/27/photos/</url>
-    <content><![CDATA[]]></content>
+    <url>/2023/01/01/photos/</url>
+    <content><![CDATA[<pre><code>    My photos will be pushed here
+</code></pre>
+]]></content>
   </entry>
   <entry>
     <title>wwdui</title>
-    <url>/2023/11/27/wwdui/</url>
+    <url>/2023/01/01/wwdui/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>works</title>
+    <url>/2023/01/01/works/</url>
     <content><![CDATA[]]></content>
   </entry>
 </search>
