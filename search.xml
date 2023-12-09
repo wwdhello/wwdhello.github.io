@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>wwdui</title>
-    <url>/2023/01/01/wwdui/</url>
-    <content><![CDATA[]]></content>
+    <title>算法实现</title>
+    <url>/2023/01/01/works/</url>
+    <content><![CDATA[<h2>概要 遗传算法 蚁群算法<b><font color="FFFF00">(持续更新中...)</font></b></h2>
+ ]]></content>
   </entry>
   <entry>
     <title>photos</title>
@@ -13,9 +14,8 @@
 ]]></content>
   </entry>
   <entry>
-    <title>算法实现</title>
-    <url>/2023/01/01/works/</url>
-    <content><![CDATA[<h2>概要 遗传算法 蚁群算法<b><font color="FFFF00">(持续更新中...)</font></b></h2>
- ]]></content>
+    <title>wwdui</title>
+    <url>/2023/01/01/wwdui/</url>
+    <content><![CDATA[]]></content>
   </entry>
 </search>
