@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>算法实现</title>
-    <url>/2023/01/01/works/</url>
-    <content><![CDATA[<h2>概要 遗传算法 蚁群算法<b><font color="FFFF00">(持续更新中...)</font></b></h2>
- ]]></content>
-  </entry>
-  <entry>
     <title>photos</title>
     <url>/2023/01/01/photos/</url>
     <content><![CDATA[<h1 id="My-photos-will-be-pushed-here"><a href="#My-photos-will-be-pushed-here" class="headerlink" title="My photos will be pushed here"></a>My photos will be pushed here</h1><h2 id="2023-12-2-栖霞山"><a href="#2023-12-2-栖霞山" class="headerlink" title="2023.12.2 栖霞山"></a>2023.12.2 栖霞山</h2><span id="more"></span>
@@ -17,5 +11,217 @@
     <title>wwdui</title>
     <url>/2023/01/01/wwdui/</url>
     <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>算法实现</title>
+    <url>/2023/01/01/works/</url>
+    <content><![CDATA[<h2>概要 遗传算法 蚁群算法<b><font color="FFFF00">(持续更新中...)</font></b></h2>
+<span id="more"></span>
+<div><b>蚁群算法</b></div>
+    //头部引用
+    import java.util.ArrayList;
+    import java.util.List;
+    import java.util.Random;
+
+<pre><code>public class main_path &#123;
+
+private int numAnts;             // 蚂蚁数量
+private int numCities;           // 城市数量
+private double[][] distances;    // 城市之间的距离矩阵
+private double[][] pheromones;   // 信息素矩阵
+private double alpha;            // 信息素重要性因子
+private double beta;             // 启发函数重要性因子
+private double evaporationRate;  // 信息素蒸发率
+private int[][] antsPaths;       // 记录每只蚂蚁的路径
+
+public main_path(int numAnts, int numCities, double[][] distances, double alpha, double beta, double evaporationRate) &#123;
+    this.numAnts = numAnts;
+    this.numCities = numCities;
+    this.distances = distances;
+    this.alpha = alpha;
+    this.beta = beta;
+    this.evaporationRate = evaporationRate;
+
+    // 初始化信息素矩阵
+    pheromones = new double[numCities][numCities];
+    for (int i = 0; i &lt; numCities; i++) &#123;
+        for (int j = 0; j &lt; numCities; j++) &#123;
+            pheromones[i][j] = 1.0;
+        &#125;
+    &#125;
+    // 初始化蚂蚁路径
+    antsPaths = new int[numAnts][numCities + 1];
+&#125;
+
+// 执行蚁群算法
+public int[] solve() &#123;
+    int numIterations = 1000;  // 迭代次数
+
+    for (int iteration = 0; iteration &lt; numIterations; iteration++) &#123;
+        // 每只蚂蚁搜索路径
+        for (int ant = 0; ant &lt; numAnts; ant++) &#123;
+            antsPaths[ant] = generateAntPath();
+        &#125;
+
+        // 更新信息素
+        updatePheromones();
+
+        // 蒸发信息素
+        evaporatePheromones();
+    &#125;
+
+    // 找到最优路径
+    return findBestPath();
+&#125;
+
+// 生成一只蚂蚁的路径
+private int[] generateAntPath() &#123;
+    int[] path = new int[numCities + 1];
+    boolean[] visited = new boolean[numCities];
+    Random random = new Random();
+
+    // 随机选择初始城市
+    int currentCity = random.nextInt(numCities);
+    path[0] = currentCity;
+    visited[currentCity] = true;
+    // 选择下一个城市
+    for (int i = 1; i &lt; numCities; i++) &#123;
+        int nextCity = selectNextCity(currentCity, visited);
+        path[i] = nextCity;
+        visited[nextCity] = true;
+        currentCity = nextCity;
+    &#125;
+
+    // 回到起始城市
+    path[numCities] = path[0];
+    return path;
+&#125;
+
+// 选择下一个城市
+private int selectNextCity(int currentCity, boolean[] visited) &#123;
+    double[] probabilities = new double[numCities];
+    double sum = 0.0;
+
+    // 计算每个城市的选择概率
+    for (int i = 0; i &lt; numCities; i++) &#123;
+        if (!visited[i]) &#123;
+            probabilities[i] = Math.pow(pheromones[currentCity][i], alpha) * Math.pow(1.0 / distances[currentCity][i], beta);
+            sum += probabilities[i];
+        &#125;
+    &#125;
+// 根据概率选择下一个城市
+    double randomValue = Math.random();
+    double cumulativeProbability = 0.0;
+    for (int i = 0; i &lt; numCities; i++) &#123;
+        if (!visited[i]) &#123;
+            cumulativeProbability += probabilities[i] / sum;
+            if (randomValue &lt;= cumulativeProbability) &#123;
+                return i;
+            &#125;
+        &#125;
+    &#125;
+
+    // 如果出现概率和小于1的情况，返回最后一个未访问的城市
+    for (int i = numCities - 1; i &gt;= 0; i--) &#123;
+        if (!visited[i]) &#123;
+            return i;
+        &#125;
+    &#125;
+
+    return -1;  // 永远不会执行到这里
+&#125;
+
+// 更新信息素
+private void updatePheromones() &#123;
+    double pheromoneDeposit = 1.0;  // 信息素沉积量
+    // 更新每只蚂蚁的路径上的信息素
+    for (int ant = 0; ant &lt; numAnts; ant++) &#123;
+        for (int i = 0; i &lt; numCities; i++) &#123;
+            int currentCity = antsPaths[ant][i];
+            int nextCity = antsPaths[ant][i + 1];
+            pheromones[currentCity][nextCity] += pheromoneDeposit;
+            pheromones[nextCity][currentCity] += pheromoneDeposit;
+        &#125;
+    &#125;
+&#125;
+
+// 蒸发信息素
+private void evaporatePheromones() &#123;
+    for (int i = 0; i &lt; numCities; i++) &#123;
+        for (int j = 0; j &lt; numCities; j++) &#123;
+            pheromones[i][j] *= (1.0 - evaporationRate);
+        &#125;
+    &#125;
+&#125;
+
+// 找到最优路径
+private int[] findBestPath() &#123;
+    int[] bestPath = null;
+    double bestDistance = Double.MAX_VALUE;
+// 寻找所有蚂蚁中最短的路径
+    for (int ant = 0; ant &lt; numAnts; ant++) &#123;
+        double currentDistance = calculatePathDistance(antsPaths[ant]);
+        if (currentDistance &lt; bestDistance) &#123;
+            bestDistance = currentDistance;
+            bestPath = antsPaths[ant];
+        &#125;
+    &#125;
+
+    return bestPath;
+&#125;
+
+// 计算路径长度
+private double calculatePathDistance(int[] path) &#123;
+    double distance = 0.0;
+    for (int i = 0; i &lt; numCities; i++) &#123;
+        distance += distances[path[i]][path[i + 1]];
+    &#125;
+    return distance;
+&#125;
+
+
+public static void main(String[] args) &#123;
+    // 示例用法
+    int numAnts = 5;  // 蚂蚁数量
+    int numCities = 6;  // 城市数量
+
+    // 示例城市之间的距离矩阵
+    double[][] distances = &#123;
+            &#123;0, 2, 5, 1, 6, 8&#125;,
+            &#123;2, 0, 4, 3, 7, 6&#125;,
+            &#123;5, 4, 0, 8, 2, 1&#125;,
+            &#123;1, 3, 8, 0, 3, 2&#125;,
+            &#123;6, 7, 2, 3, 0, 5&#125;,
+            &#123;8, 6, 1, 2, 5, 0&#125;
+    &#125;;
+
+    double alpha = 1.0;           // 信息素重要性因子
+    double beta = 2.0;            // 启发函数重要性因子
+    double evaporationRate = 0.5; // 信息素蒸发率
+
+    main_path antColony = new main_path(numAnts, numCities, distances, alpha, beta, evaporationRate);
+
+    // 执行蚁群算法
+    int[] bestPath = antColony.solve();
+
+    // 打印最优路径和距离
+    System.out.println(&quot;Best Path: &quot; + arrayToString(bestPath));
+    System.out.println(&quot;Best Distance: &quot; + antColony.calculatePathDistance(bestPath));
+&#125;
+
+// 辅助方法：将数组转换为字符串
+private static String arrayToString(int[] array) &#123;
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i &lt; array.length; i++) &#123;
+        sb.append(array[i]);
+        if (i &lt; array.length - 1) &#123;
+            sb.append(&quot; -&gt; &quot;);
+        &#125;
+    &#125;
+    return sb.toString();
+&#125;
+&#125;
+</code></pre>
+]]></content>
   </entry>
 </search>
